@@ -1,4 +1,4 @@
-﻿console.log("📞 Instagram Phone Copier v6 running");
+console.log("📞 Instagram Phone Copier v6.1 running");
 
 const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/gi;
 const phoneRegex = /(\+?\d[\d\s().-]{5,20}\d)/g;
@@ -63,60 +63,65 @@ function scanForNumbers() {
 
   messages.forEach(row => {
     const sender = getMessageSender(row, friendUsername);
-    const spans = row.querySelectorAll("span");
 
-    spans.forEach(span => {
-      const text = span.innerText.trim();
-      if (!text) return;
+    // ✅ IMPORTANT: use FULL message text
+    const fullText = row.innerText;
+    if (!fullText) return;
 
-      const phoneMatches = text.match(phoneRegex) || [];
-      const emailMatches = text.match(emailRegex) || [];
+    const phoneMatches = fullText.match(phoneRegex) || [];
+    const emailMatches = fullText.match(emailRegex) || [];
 
-      phoneMatches.forEach(rawPhone => {
-        const phone = normalizePhone(rawPhone);
-        const digits = phone.replace(/\D/g, "");
-        const isValid = digits.length >= 10;
+    /* ======================
+       📞 PHONE HANDLING
+    ====================== */
+    phoneMatches.forEach(rawPhone => {
+      const phone = normalizePhone(rawPhone);
+      const digits = phone.replace(/\D/g, "");
+      const isValid = digits.length >= 10;
 
-        copyToClipboard(phone);
+      // Always copy latest detected phone
+      copyToClipboard(phone);
 
-        const exists = savedLeads.some(
-          l =>
-            l.type === "phone" &&
-            l.username === sender &&
-            normalizePhone(l.phone) === phone
-        );
-        if (exists) return;
+      const exists = savedLeads.some(
+        l =>
+          l.type === "phone" &&
+          l.username === sender &&
+          normalizePhone(l.phone) === phone
+      );
+      if (exists) return;
 
-        savedLeads.push({
-          username: sender,
-          type: "phone",
-          phone,
-          email: "",
-          valid: isValid
-        });
-
-        chrome.storage.local.set({ leads: savedLeads });
+      savedLeads.push({
+        username: sender,
+        type: "phone",
+        phone,
+        email: "",
+        valid: isValid
       });
 
-      emailMatches.forEach(email => {
-        const exists = savedLeads.some(
-          l =>
-            l.type === "email" &&
-            l.username === sender &&
-            l.email.toLowerCase() === email.toLowerCase()
-        );
-        if (exists) return;
+      chrome.storage.local.set({ leads: savedLeads });
+    });
 
-        savedLeads.push({
-          username: sender,
-          type: "email",
-          phone: "",
-          email,
-          valid: true
-        });
+    /* ======================
+       📧 EMAIL HANDLING
+    ====================== */
+    emailMatches.forEach(email => {
+      const exists = savedLeads.some(
+        l =>
+          l.type === "email" &&
+          l.username === sender &&
+          l.email.toLowerCase() === email.toLowerCase()
+      );
+      if (exists) return;
 
-        chrome.storage.local.set({ leads: savedLeads });
+      savedLeads.push({
+        username: sender,
+        type: "email",
+        phone: "",
+        email,
+        valid: true
       });
+
+      chrome.storage.local.set({ leads: savedLeads });
     });
   });
 }
