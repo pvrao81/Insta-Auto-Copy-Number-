@@ -1,4 +1,4 @@
-﻿const tbody = document.getElementById("leadList");
+const tbody = document.getElementById("leadList");
 const clearBtn = document.getElementById("clear");
 const toggle = document.getElementById("toggleEnabled");
 
@@ -46,7 +46,7 @@ function loadLeads() {
             ? lead.valid
               ? "valid"
               : "invalid"
-            : "";
+            : "email";
 
         const valueToCopy =
           lead.type === "phone" ? lead.phone : lead.email;
