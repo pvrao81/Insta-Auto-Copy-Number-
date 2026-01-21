@@ -1,4 +1,4 @@
-﻿chrome.commands.onCommand.addListener(command => {
+chrome.commands.onCommand.addListener(command => {
   if (command === "toggle-extension") {
     chrome.storage.local.get({ enabled: true }, data => {
       const newState = !data.enabled;
